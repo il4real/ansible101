@@ -1,0 +1,65 @@
+---
+
+- hosts: localhost
+
+  tasks:
+    - name: Connection check
+      ping:
+        data: 'Connection is ok'
+      register: var_ping
+
+    - name: Connection established
+      debug:
+        var: var_ping
+
+    - name: Creating users Dace, John, Taylor, Mike
+      become: true
+      user:
+        name: "{{ item }}"
+      loop:
+        - Dace
+        - John
+        - Taylor
+        - Mike
+
+- hosts: localhost
+
+  vars_prompt:
+    - name: yourname
+      prompt: Please enter your name 
+      private: false
+
+  tasks:
+    - name: Entered name
+      debug:
+        msg: 'Hello, {{ yourname }}'
+
+    - name: CentOS
+      become: true
+      yum:
+        name: httpd
+        state: latest
+      when: ansible_distribution == "CentOS"
+
+    - name: Ubuntu
+      become: true
+      apt:
+        name: apache2
+        state: latest
+      when: ansible_distribution == "Ubuntu"
+
+  handlers:
+    - name: Restart on CentOS
+      become: true
+      service:
+        name: httpd
+        state: restarted
+      when: ansible_distribution == "CentOS"
+
+    - name: Restart on Ubuntu
+      become: true
+      service:
+        name: apache2
+        state: restarted
+      when: ansible_distribution == "Ubuntu"
+...
